@@ -1,14 +1,14 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 require 'getoptlong'
 opts = GetoptLong.new(
-  [ '--node',           '-n', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--node',           '-n', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--modulepath',     '-m', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ]
 )
 
 require 'puppet'
 
-node, external_nodes, modulepath = nil, nil, Puppet[:modulepath]
+node, external_nodes, modulepath = 'default', nil, Puppet[:modulepath]
 opts.each do |opt, arg|
   case opt
     when '--node'
@@ -43,9 +43,14 @@ begin
 
   paths = compiled_catalog.vertices.
       select {|vertex| vertex.type == "File" and vertex[:source] =~ %r{puppet://}}.
-      map {|file_resource| Puppet::FileServing::Metadata.find(file_resource[:source])}. # this step should return nil where source doesn't exist
+      map do |file_resource|
+        file_metadata = Puppet::FileServing::Metadata.find(file_resource[:source])
+        puts "The file #{file_resource[:source]} is not accessible" if file_metadata.nil?
+        file_metadata
+      end.
       compact.
-      map {|filemetadata| filemetadata.path}
+      map {|filemetadata| filemetadata.path}.
+      uniq
 
 rescue => detail
   $stderr.puts detail

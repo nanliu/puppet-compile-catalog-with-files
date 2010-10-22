@@ -1,14 +1,10 @@
 #!/usr/bin/ruby
-require 'getoptlong'
-opts = GetoptLong.new(
-  [ '--node', '-n', GetoptLong::REQUIRED_ARGUMENT ]
-)
 
-node = nil
-opts.each do |opt, arg|
-  case opt
-    when '--node'
-      node = arg
-  end
-end
+nodefile = ARGV[0]
+nodefile =~ /(.*)\.compiled_catalog_with_files/
+nodename = $1
 
+`tar -xvPf #{nodefile}`
+modulepath = File.open("#{nodename}.modulepath").readlines.first
+
+`puppet --debug --apply #{nodename}.catalog.pson --modulepath #{modulepath}`
