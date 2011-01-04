@@ -5,6 +5,7 @@
 require 'trollop'
 require 'pp'
 
+apply_opts = ""
 # obtain list of options to pass to puppet apply
 i = ARGV.index('-o') || ARGV.index('--options')
 if i
@@ -23,13 +24,13 @@ Options:
 EOS
 
   opt :extractdir, 'Extract target directory for tar.gz',
-      :short=>'-x',
-      :default=>'/tmp'
+      :short => '-x',
+      :default => '/tmp'
   opt :nodefile, 'Node tar.gz file',
-      :short=>'-n',
-      :type=>:string
+      :short => '-n',
+      :type => :string
   opt :options, 'Options for puppet apply',
-      :short => '-o'
+      :short => '-o',
   opt :report, 'Enable store report.',
       :short => '-r'
   opt :verbose, 'Enable debug mode.',
